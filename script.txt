@@ -1,0 +1,35 @@
+CREATE constraint on (u:User)
+ASSERT u.id is unique;
+
+CREATE constraint on (p:Post)
+ASSERT p.id is unique;
+
+LOAD CSV FROM 'file:///ssm_users.csv' AS row
+CREATE (:User { id: row[0], name: row[1]});
+
+LOAD CSV FROM 'file:///ssm_posts.csv' AS row
+MATCH (u:User {id: row[1]})
+MERGE (p:Post { id: row[0], name: row[0] })
+MERGE (u)-[:OWN]->(p);
+
+LOAD CSV FROM 'file:///ssm_comments.csv' AS row
+MERGE (u:User {id: row[2] })
+MERGE (p:Post {id: row[1] })
+CREATE (u)-[:COMMENT]->(p)
+
+
+MATCH (commenter:User)-[:COMMENT]->(p:Post)
+MATCH (poster:User)-[:OWN]->(p)
+return commenter.name as source, poster.name as target, count(*) as weight
+
+
+CALL algo.pageRank.stream(
+ "MATCH (p:User) RETURN id(p) AS id",
+ "MATCH (commenter:User)-[:COMMENT]->(p:Post), (poster:User)-[:OWN]->(p) return id(commenter) as source, id(poster) as target, count(*) as weight",
+ {graph:"cypher", weightProperty: "weight"}
+ )
+YIELD nodeId, score
+RETURN algo.getNodeById(nodeId).name AS player, score
+ORDER BY score DESC
+LIMIT 10
+
