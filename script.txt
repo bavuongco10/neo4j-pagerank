@@ -1,35 +1,52 @@
-CREATE constraint on (u:User)
-ASSERT u.id is unique;
+ create mode 100644 data/ssm_posts.sql
+ create mode 100644 data/ssm_posts.xlsx
+ create mode 100644 data/ssm_users.csv
+ create mode 100644 data/ssm_users.sql
+ create mode 100644 data/ssm_users.xlsx
+ create mode 100644 script.txt
 
-CREATE constraint on (p:Post)
-ASSERT p.id is unique;
+neo4j-pagerank on  master
+➜ gp
+Enumerating objects: 14, done.
+Counting objects: 100% (14/14), done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (14/14), 1.40 MiB | 488.00 KiB/s, done.
+Total 14 (delta 0), reused 0 (delta 0)
+To github.com:bavuongco10/neo4j-pagerank.git
+ * [new branch]      master -> master
 
-LOAD CSV FROM 'file:///ssm_users.csv' AS row
-CREATE (:User { id: row[0], name: row[1]});
+neo4j-pagerank on  master took 9s
+➜ open .
 
-LOAD CSV FROM 'file:///ssm_posts.csv' AS row
-MATCH (u:User {id: row[1]})
-MERGE (p:Post { id: row[0], name: row[0] })
-MERGE (u)-[:OWN]->(p);
+neo4j-pagerank on  master
+➜ https://www.facebook.com/groups/cio
+clear                                                                                                                                        $(spaceship_rprompt)
 
-LOAD CSV FROM 'file:///ssm_comments.csv' AS row
-MERGE (u:User {id: row[2] })
-MERGE (p:Post {id: row[1] })
-CREATE (u)-[:COMMENT]->(p)
-
-
-MATCH (commenter:User)-[:COMMENT]->(p:Post)
-MATCH (poster:User)-[:OWN]->(p)
-return commenter.name as source, poster.name as target, count(*) as weight
+neo4j-pagerank on  master [?]
+➜ gs
+ 1 script.txt                                                                                                                                                   X
+ LOAD CSV FROM 'file:///ssm_comments.csv' AS row
+ MERGE (u:User {id: row[2] })
+ MERGE (p:Post {id: row[1] })
+ CREATE (u)-[:COMMENT]->(p)
 
 
-CALL algo.pageRank.stream(
- "MATCH (p:User) RETURN id(p) AS id",
- "MATCH (commenter:User)-[:COMMENT]->(p:Post), (poster:User)-[:OWN]->(p) return id(commenter) as source, id(poster) as target, count(*) as weight",
- {graph:"cypher", weightProperty: "weight"}
- )
-YIELD nodeId, score
-RETURN algo.getNodeById(nodeId).name AS player, score
-ORDER BY score DESC
-LIMIT 10
+ MATCH (commenter:User)-[:COMMENT]->(p:Post)
+ MATCH (poster:User)-[:OWN]->(p)
+ return commenter.name as source, poster.name as target, count(*) as weight
 
+
+ CALL algo.pageRank.stream(
+  "MATCH (p:User) RETURN id(p) AS id",
+  "MATCH (commenter:User)-[:COMMENT]->(p:Post), (poster:User)-[:OWN]->(p) return id(commenter) as source, id(poster) as target, count(*) as weight",
+  {graph:"cypher", weightProperty: "weight"}
+  )
+ YIELD nodeId, score
+ RETURN algo.getNodeById(nodeId).name AS player, score
+ ORDER BY score DESC
+ LIMIT 10
+
+ INSERT   master   script.txt                                                                                                                       100%    35:1
+"script.txt" 35L, 991C
+-- INSERT --
